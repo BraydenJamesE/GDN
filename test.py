@@ -41,7 +41,10 @@ def test(model, dataloader):
     i = 0
     acu_loss = 0
     for x, y, labels, edge_index in dataloader:
-        x, y, labels, edge_index = [item.to(device).float() for item in [x, y, labels, edge_index]]
+        x = x.float().to(device)
+        y = y.float().to(device)
+        labels = labels.float().to(device)
+        edge_index = edge_index.to(device)
         
         with torch.no_grad():
             predicted = model(x, edge_index).float().to(device)

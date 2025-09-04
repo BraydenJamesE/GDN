@@ -52,8 +52,11 @@ data
 
 ## Run
 ```
-    # using gpu
+    # using cuda gpu
     bash run.sh <gpu_id> <dataset>
+
+    # using mps gpu
+    bash run.sh mps <dataset>
 
     # or using cpu
     bash run.sh cpu <dataset>

@@ -205,7 +205,7 @@ if __name__ == "__main__":
     parser.add_argument('-slide_stride', help='slide_stride', type = int, default=5)
     parser.add_argument('-save_path_pattern', help='save path pattern', type = str, default='')
     parser.add_argument('-dataset', help='wadi / swat', type = str, default='wadi')
-    parser.add_argument('-device', help='cuda / cpu', type = str, default='cuda')
+    parser.add_argument('-device', help='mps / cuda / cpu', type = str, default='cpu')
     parser.add_argument('-random_seed', help='random seed', type = int, default=0)
     parser.add_argument('-comment', help='experiment comment', type = str, default='')
     parser.add_argument('-out_layer_num', help='outlayer num', type = int, default=1)
@@ -223,6 +223,7 @@ if __name__ == "__main__":
     torch.manual_seed(args.random_seed)
     torch.cuda.manual_seed(args.random_seed)
     torch.cuda.manual_seed_all(args.random_seed)
+    torch.mps.manual_seed(args.random_seed)
     torch.backends.cudnn.benchmark = False
     torch.backends.cudnn.deterministic = True
     os.environ['PYTHONHASHSEED'] = str(args.random_seed)

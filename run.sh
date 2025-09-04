@@ -33,13 +33,13 @@ if [[ "$gpu_n" == "cpu" ]]; then
         -dim $dim \
         -out_layer_num $out_layer_num \
         -out_layer_inter_dim $out_layer_inter_dim \
-        -decay $decay \
         -val_ratio $val_ratio \
         -report $report \
         -topk $topk \
         -device 'cpu'
-else
-    CUDA_VISIBLE_DEVICES=$gpu_n  python main.py \
+
+elif [[ "$gpu_n" == "mps" ]]; then
+    python main.py \
         -dataset $DATASET \
         -save_path_pattern $path_pattern \
         -slide_stride $SLIDE_STRIDE \
@@ -52,8 +52,27 @@ else
         -dim $dim \
         -out_layer_num $out_layer_num \
         -out_layer_inter_dim $out_layer_inter_dim \
+        -val_ratio $val_ratio \
+        -report $report \
+        -topk $topk \
+        -device 'mps' 
+
+else
+    CUDA_VISIBLE_DEVICES=$gpu_n  python main.py \
+        -dataset $DATASET \
+        -save_path_pattern $path_pattern \
+        -slide_stride $SLIDE_STRIDE \
+        -slide_win $SLIDE_WIN \
+        -batch $BATCH_SIZE \
+        -epoch $EPOCH \
+        -comment $COMMENT \
+        -random_seed $seed \
+        -dim $dim \
+        -out_layer_num $out_layer_num \
+        -out_layer_inter_dim $out_layer_inter_dim \
         -decay $decay \
         -val_ratio $val_ratio \
         -report $report \
-        -topk $topk
+        -topk $topk \
+        -device 'cuda'
 fi

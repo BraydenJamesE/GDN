@@ -2,11 +2,30 @@ import torch
 from torch.nn import Parameter, Linear, Sequential, BatchNorm1d, ReLU
 import torch.nn.functional as F
 from torch_geometric.nn.conv import MessagePassing
-from torch_geometric.utils import remove_self_loops, add_self_loops, softmax
+from torch_geometric.utils import remove_self_loops, add_self_loops
 
 from torch_geometric.nn.inits import glorot, zeros
 import time
 import math
+
+from typing import Optional
+from torch import Tensor
+from torch_geometric.utils import softmax as pyg_softmax
+
+def mps_safe_softmax(src: Tensor,
+                     index: Optional[Tensor] = None,
+                     ptr: Optional[Tensor] = None,
+                     num_nodes: Optional[int] = None,
+                     dim: int = 0) -> Tensor:
+    if src.device.type == 'mps':
+        # move only the needed tensors to CPU, call the real PyG softmax, move back
+        src_cpu = src.to('cpu')
+        index_cpu = index.to('cpu') if index is not None else None
+        ptr_cpu = ptr.to('cpu') if ptr is not None else None
+        out_cpu = pyg_softmax(src_cpu, index_cpu, ptr_cpu, num_nodes, dim)
+        return out_cpu.to(src.device)
+    return pyg_softmax(src, index, ptr, num_nodes, dim)
+
 
 class GraphLayer(MessagePassing):
     def __init__(self, in_channels, out_channels, heads=1, concat=True,
@@ -47,7 +66,6 @@ class GraphLayer(MessagePassing):
         zeros(self.att_em_j)
 
         zeros(self.bias)
-
 
 
     def forward(self, x, edge_index, embedding, return_attention_weights=False):
@@ -107,7 +125,7 @@ class GraphLayer(MessagePassing):
 
 
         alpha = F.leaky_relu(alpha, self.negative_slope)
-        alpha = softmax(alpha, edge_index_i, num_nodes=size_i, dim=0)
+        alpha = mps_safe_softmax(alpha, index=edge_index_i, num_nodes=size_i, dim=0)
 
         if return_attention_weights:
             self.__alpha__ = alpha
@@ -115,7 +133,6 @@ class GraphLayer(MessagePassing):
         alpha = F.dropout(alpha, p=self.dropout, training=self.training)
         
         return x_j * alpha.view(-1, self.heads, 1)
-
 
 
     def __repr__(self):

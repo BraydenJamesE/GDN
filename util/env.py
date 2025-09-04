@@ -1,10 +1,11 @@
 import torch
 import numpy as np
+from typing import Literal
 
 _device = None 
 
-def get_device():
-    # return torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+def get_device() -> torch.device | Literal["cpu"]:
+    # returns cpu string or torch device for cuda or mps. 
     return _device
 
 def set_device(dev):
